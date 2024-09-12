@@ -1,0 +1,439 @@
+#+TITLE: Amazon Bedrock Flow Simulator
+#+PROPERTY: header-args :tangle yes
+
+* Project Structure
+:PROPERTIES:
+:header-args: :tangle no
+:END:
+
+#+BEGIN_SRC sh
+mkdir -p flow_simulator
+touch flow_simulator/{__init__.py,models.py,simulator.py,utils.py,visualizer.py,bedrock_updater.py,main.py}
+#+END_SRC
+
+#+RESULTS:
+
+* Models
+#+BEGIN_SRC python :tangle flow_simulator/models.py
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+
+class FlowNodeInput(BaseModel):
+    name: str
+    type: str
+    expression: str = Field(default="$.data")
+
+class FlowNodeOutput(BaseModel):
+    name: str
+    type: str
+
+class FlowNodeConfiguration(BaseModel):
+    pass
+
+class FlowNode(BaseModel):
+    name: str
+    type: str
+    inputs: List[FlowNodeInput] = []
+    outputs: List[FlowNodeOutput] = []
+    configuration: FlowNodeConfiguration
+
+class FlowDataConnectionConfiguration(BaseModel):
+    sourceOutput: str
+    targetInput: str
+
+class FlowConnection(BaseModel):
+    name: str
+    source: str
+    target: str
+    type: str = "Data"
+    configuration: Dict[str, FlowDataConnectionConfiguration]
+
+class FlowDefinition(BaseModel):
+    nodes: List[FlowNode]
+    connections: List[FlowConnection]
+
+class LambdaFunctionFlowNodeConfiguration(FlowNodeConfiguration):
+    lambdaArn: str
+
+class PromptFlowNodeConfiguration(FlowNodeConfiguration):
+    prompt: Dict[str, Any]
+
+class KnowledgeBaseFlowNodeConfiguration(FlowNodeConfiguration):
+    knowledgeBaseId: str
+
+def create_identity_flow() -> FlowDefinition:
+    input_node = FlowNode(
+        name="Start",
+        type="Input",
+        outputs=[FlowNodeOutput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    output_node = FlowNode(
+        name="End",
+        type="Output",
+        inputs=[FlowNodeInput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    connection = FlowConnection(
+        name="StartToEnd",
+        source="Start",
+        target="End",
+        configuration={
+            "data": FlowDataConnectionConfiguration(
+                sourceOutput="document",
+                targetInput="document"
+            )
+        }
+    )
+    
+    return FlowDefinition(nodes=[input_node, output_node], connections=[connection])
+
+def create_upcase_flow(lambda_arn: str) -> FlowDefinition:
+    input_node = FlowNode(
+        name="Start",
+        type="Input",
+        outputs=[FlowNodeOutput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    upcase_node = FlowNode(
+        name="Upcase",
+        type="LambdaFunction",
+        inputs=[FlowNodeInput(name="input", type="String")],
+        outputs=[FlowNodeOutput(name="functionResponse", type="String")],
+        configuration=LambdaFunctionFlowNodeConfiguration(lambdaArn=lambda_arn)
+    )
+    
+    output_node = FlowNode(
+        name="End",
+        type="Output",
+        inputs=[FlowNodeInput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    connections = [
+        FlowConnection(
+            name="StartToUpcase",
+            source="Start",
+            target="Upcase",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="document",
+                    targetInput="input"
+                )
+            }
+        ),
+        FlowConnection(
+            name="UpcaseToEnd",
+            source="Upcase",
+            target="End",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="functionResponse",
+                    targetInput="document"
+                )
+            }
+        )
+    ]
+    
+    return FlowDefinition(nodes=[input_node, upcase_node, output_node], connections=connections)
+
+def create_knowledge_base_flow(knowledge_base_id: str, prompt_arn: str) -> FlowDefinition:
+    input_node = FlowNode(
+        name="Start",
+        type="Input",
+        outputs=[FlowNodeOutput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    kb_node = FlowNode(
+        name="QueryKnowledgeBase",
+        type="KnowledgeBase",
+        inputs=[FlowNodeInput(name="retrievalQuery", type="String")],
+        outputs=[FlowNodeOutput(name="retrievalResults", type="Array")],
+        configuration=KnowledgeBaseFlowNodeConfiguration(knowledgeBaseId=knowledge_base_id)
+    )
+    
+    prompt_node = FlowNode(
+        name="GenerateResponse",
+        type="Prompt",
+        inputs=[
+            FlowNodeInput(name="query", type="String"),
+            FlowNodeInput(name="context", type="Array")
+        ],
+        outputs=[FlowNodeOutput(name="modelCompletion", type="String")],
+        configuration=PromptFlowNodeConfiguration(
+            prompt={
+                "sourceConfiguration": {
+                    "resource": {
+                        "promptArn": prompt_arn
+                    }
+                }
+            }
+        )
+    )
+    
+    output_node = FlowNode(
+        name="End",
+        type="Output",
+        inputs=[FlowNodeInput(name="document", type="String")],
+        configuration=FlowNodeConfiguration()
+    )
+    
+    connections = [
+        FlowConnection(
+            name="StartToKB",
+            source="Start",
+            target="QueryKnowledgeBase",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="document",
+                    targetInput="retrievalQuery"
+                )
+            }
+        ),
+        FlowConnection(
+            name="StartToPrompt",
+            source="Start",
+            target="GenerateResponse",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="document",
+                    targetInput="query"
+                )
+            }
+        ),
+        FlowConnection(
+            name="KBToPrompt",
+            source="QueryKnowledgeBase",
+            target="GenerateResponse",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="retrievalResults",
+                    targetInput="context"
+                )
+            }
+        ),
+        FlowConnection(
+            name="PromptToEnd",
+            source="GenerateResponse",
+            target="End",
+            configuration={
+                "data": FlowDataConnectionConfiguration(
+                    sourceOutput="modelCompletion",
+                    targetInput="document"
+                )
+            }
+        )
+    ]
+    
+    return FlowDefinition(nodes=[input_node, kb_node, prompt_node, output_node], connections=connections)
+#+END_SRC
+
+* Simulator
+#+BEGIN_SRC python :tangle flow_simulator/simulator.py
+from .models import FlowDefinition, FlowNode, FlowConnection
+import boto3
+import json
+
+class FlowSimulator:
+    def __init__(self, flow: FlowDefinition):
+        self.flow = flow
+        self.node_map = {node.name: node for node in flow.nodes}
+        self.connection_map = {conn.source: conn for conn in flow.connections}
+        self.lambda_client = boto3.client('lambda')
+        self.bedrock_runtime = boto3.client('bedrock-runtime')
+        self.bedrock_agent = boto3.client('bedrock-agent-runtime')
+    
+    def simulate(self, input_data: str) -> str:
+        current_node = self.node_map["Start"]
+        data = input_data
+        
+        while current_node.type != "Output":
+            connection = self.connection_map[current_node.name]
+            next_node = self.node_map[connection.target]
+            data = self._process_node(next_node, data)
+            current_node = next_node
+        
+        return data
+    
+    def _process_node(self, node: FlowNode, data: str) -> str:
+        if node.type == "LambdaFunction":
+            return self._invoke_lambda(node, data)
+        elif node.type == "Prompt":
+            return self._invoke_prompt(node, data)
+        elif node.type == "KnowledgeBase":
+            return self._query_knowledge_base(node, data)
+        else:
+            return data  # Pass-through for other node types
+    
+    def _invoke_lambda(self, node: FlowNode, data: str) -> str:
+        lambda_arn = node.configuration.lambdaArn
+        response = self.lambda_client.invoke(
+            FunctionName=lambda_arn,
+            Payload=json.dumps({"input": data}).encode()
+        )
+        return json.loads(response['Payload'].read())['output']
+    
+    def _invoke_prompt(self, node: FlowNode, data: str) -> str:
+        prompt_config = node.configuration.prompt
+        model_id = prompt_config['sourceConfiguration']['resource'].get('modelId', 'anthropic.claude-v2')
+        prompt_text = f"{prompt_config['sourceConfiguration']['resource']['promptArn']}\n\nInput: {data}"
+        
+        response = self.bedrock_runtime.invoke_model(
+            modelId=model_id,
+            contentType='application/json',
+            accept='application/json',
+            body=json.dumps({
+                "prompt": prompt_text,
+                "max_tokens_to_sample": 500,
+                "temperature": 0.7,
+                "top_p": 1,
+                "top_k": 250,
+                "stop_sequences": ["\n\nHuman:"]
+            })
+        )
+        
+        return json.loads(response['body'].read())['completion']
+    
+    def _query_knowledge_base(self, node: FlowNode, data: str) -> str:
+        kb_id = node.configuration.knowledgeBaseId
+        response = self.bedrock_agent.retrieve(
+            knowledgeBaseId=kb_id,
+            retrievalQuery=data,
+            numberOfResults=5
+        )
+        return json.dumps(response['retrievalResults'])
+#+END_SRC
+
+* Utils
+#+BEGIN_SRC python :tangle flow_simulator/utils.py
+import json
+from .models import FlowDefinition
+
+def save_flow_to_json(flow: FlowDefinition, filename: str):
+    with open(filename, 'w') as f:
+        json.dump(flow.dict(), f, indent=2)
+
+def load_flow_from_json(filename: str) -> FlowDefinition:
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    return FlowDefinition(**data)
+#+END_SRC
+
+* Visualizer
+#+BEGIN_SRC python :tangle flow_simulator/visualizer.py
+from .models import FlowDefinition
+
+def generate_mermaid(flow: FlowDefinition) -> str:
+    mermaid_code = ["graph TD"]
+    
+    for node in flow.nodes:
+        mermaid_code.append(f"    {node.name}[{node.name} <br> Type: {node.type}]")
+    
+    for conn in flow.connections:
+        mermaid_code.append(f"    {conn.source} --> |{conn.name}| {conn.target}")
+    
+    return "\n".join(mermaid_code)
+#+END_SRC
+
+* Bedrock Updater
+#+BEGIN_SRC python :tangle flow_simulator/bedrock_updater.py
+import boto3
+from .models import FlowDefinition
+
+class BedrockFlowUpdater:
+    def __init__(self):
+        self.bedrock_agent = boto3.client('bedrock-agent')
+    
+    def create_or_update_flow(self, flow: FlowDefinition, flow_name: str, role_arn: str):
+        try:
+            # Try to get the existing flow
+            existing_flow = self.bedrock_agent.get_flow(
+                flowIdentifier=flow_name
+            )
+            
+            # If the flow exists, update it
+            response = self.bedrock_agent.update_flow(
+                flowIdentifier=flow_name,
+                definition=flow.dict()
+            )
+            print(f"Flow updated: {response['flowArn']}")
+        
+        except self.bedrock_agent.exceptions.ResourceNotFoundException:
+            # If the flow doesn't exist, create a new one
+            response = self.bedrock_agent.create_flow(
+                name=flow_name,
+                description=f"Flow: {flow_name}",
+                executionRoleArn=role_arn,
+                definition=flow.dict()
+            )
+            print(f"Flow created: {response['flowArn']}")
+        
+        return response['flowArn']
+#+END_SRC
+
+* Main
+
+#+BEGIN_SRC python :tangle flow_simulator/main.py
+from .models import create_identity_flow, create_upcase_flow, create_knowledge_base_flow
+from .simulator import FlowSimulator
+from .utils import save_flow_to_json, load_flow_from_json
+from .visualizer import generate_mermaid
+from .bedrock_updater import BedrockFlowUpdater
+
+def main():
+    # Example 1: Identity Flow
+    identity_flow = create_identity_flow()
+    save_flow_to_json(identity_flow, "identity_flow.json")
+    
+    print("Identity Flow:")
+    print(generate_mermaid(identity_flow))
+    
+    identity_simulator = FlowSimulator(identity_flow)
+    identity_result = identity_simulator.simulate("Hello, Bedrock!")
+    print(f"Identity Flow Result: {identity_result}")
+    
+    # Example 2: Upcase Flow
+    lambda_arn = "arn:aws:lambda:us-west-2:123456789012:function:UpcaseFunction"
+    upcase_flow = create_upcase_flow(lambda_arn)
+    save_flow_to_json(upcase_flow, "upcase_flow.json")
+    
+    print("\nUpcase Flow:")
+    print(generate_mermaid(upcase_flow))
+    
+    upcase_simulator = FlowSimulator(upcase_flow)
+    upcase_result = upcase_simulator.simulate("Hello, Bedrock!")
+    print(f"Upcase Flow Result: {upcase_result}")
+    
+    # Example 3: Knowledge Base Flow
+    knowledge_base_id = "arn:aws:bedrock:us-west-2:123456789012:knowledge-base/MyKnowledgeBase"
+    prompt_arn = "arn:aws:bedrock:us-west-2:123456789012:prompt/MyResponsePrompt"
+    kb_flow = create_knowledge_base_flow(knowledge_base_id, prompt_arn)
+    save_flow_to_json(kb_flow, "knowledge_base_flow.json")
+    
+    print("\nKnowledge Base Flow:")
+    print(generate_mermaid(kb_flow))
+    
+    kb_simulator = FlowSimulator(kb_flow)
+    kb_result = kb_simulator.simulate("What is Amazon Bedrock?")
+    print(f"Knowledge Base Flow Result: {kb_result}")
+    
+    # Update flows in Bedrock
+    updater = BedrockFlowUpdater()
+    role_arn = "arn:aws:iam::123456789012:role/BedrockFlowRole"
+    
+    identity_flow_arn = updater.create_or_update_flow(identity_flow, "IdentityFlow", role_arn)
+    upcase_flow_arn = updater.create_or_update_flow(upcase_flow, "UpcaseFlow", role_arn)
+    kb_flow_arn = updater.create_or_update_flow(kb_flow, "KnowledgeBaseFlow", role_arn)
+    
+    print("\nUpdated Flow ARNs:")
+    print(f"Identity Flow ARN: {identity_flow_arn}")
+    print(f"Upcase Flow ARN: {upcase_flow_arn}")
+    print(f"Knowledge Base Flow ARN: {kb_flow_arn}")
+
+if __name__ == "__main__":
+    main()
+#+END_SRC
