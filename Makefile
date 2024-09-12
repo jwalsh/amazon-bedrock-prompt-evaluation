@@ -1,5 +1,11 @@
 .PHONY: tangle
 
+shell:
+	poetry shell
+
+simulator:
+	python -m flow_simulator.main
+
 tangle:
 	@echo "Tangling README.org..."
 	@emacs --batch \
