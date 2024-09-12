@@ -1,0 +1,36 @@
+You're an evaluator for the prompts and answers provided by a generative AI model.
+Consider the input prompt in the <input> tags, the output answer in the <output> tags, the prompt evaluation criteria in the <prompt_criteria> tags, and the answer evaluation criteria in the <answer_criteria> tags.
+
+<input>
+{{input}}
+</input>
+
+<output>
+{{output}}
+</output>
+
+<prompt_criteria>
+- The prompt should be clear, direct, and detailed.
+- The question, task, or goal should be well explained and be grammatically correct.
+- The prompt is better if containing examples.
+- The prompt is better if specifies a role or sets a context.
+- The prompt is better if provides details about the format and tone of the expected answer.
+</prompt_criteria>
+
+<answer_criteria>
+- The answers should be correct, well structured, and technically complete.
+- The answers should not have any hallucinations, made up content, or toxic content.
+- The answer should be grammatically correct.
+- The answer should be fully aligned with the question or instruction in the prompt.
+</answer_criteria>
+
+Evaluate the answer the generative AI model provided in the <output> with a score from 0 to 100 according to the <answer_criteria> provided; any hallucinations, even if small, should dramatically impact the evaluation score.
+Also evaluate the prompt passed to that generative AI model provided in the <input> with a score from 0 to 100 according to the <prompt_criteria> provided.
+Respond only with a JSON having:
+- An 'answer-score' key with the score number you evaluated the answer with.
+- A 'prompt-score' key with the score number you evaluated the prompt with.
+- A 'justification' key with a justification for the two evaluations you provided to the answer and the prompt; make sure to explicitely include any errors or hallucinations in this part.
+- An 'input' key with the content of the <input> tags.
+- An 'output' key with the content of the <output> tags.
+- A 'prompt-recommendations' key with recommendations for improving the prompt based on the evaluations performed.
+Skip any preamble or any other text apart from the JSON in your answer.

@@ -1,0 +1,155 @@
+{
+    "nodes": [
+        {
+            "name": "Start",
+            "type": "Input",
+            "configuration": {
+                "input": {}
+            },
+            "outputs": [
+                {
+                    "name": "document",
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "End",
+            "type": "Output",
+            "configuration": {
+                "output": {}
+            },
+            "inputs": [
+                {
+                    "expression": "$.data",
+                    "name": "document",
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "Invoke",
+            "type": "Prompt",
+            "configuration": {
+                "prompt": {
+                    "sourceConfiguration": {
+                        "inline": {
+                            "inferenceConfiguration": {
+                                "text": {
+                                    "maxTokens": 2000,
+                                    "temperature": 0
+                                }
+                            },
+                            "modelId": "$MODEL_INVOKE_ID",
+                            "templateConfiguration": {
+                                "text": {
+                                    "inputVariables": [
+                                        {
+                                            "name": "input"
+                                        }
+                                    ],
+                                    "text": "{{input}}"
+                                }
+                            },
+                            "templateType": "TEXT"
+                        }
+                    }
+                }
+            },
+            "inputs": [
+                {
+                    "expression": "$.data",
+                    "name": "input",
+                    "type": "String"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "modelCompletion",
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "Evaluate",
+            "type": "Prompt",
+            "configuration": {
+                "prompt": {
+                    "sourceConfiguration": {
+                        "resource": {
+                            "promptArn": "$PROMPT_EVAL_ARN"
+                        }
+                    }
+                }
+            },
+            "inputs": [
+                {
+                    "expression": "$.data",
+                    "name": "input",
+                    "type": "String"
+                },
+                {
+                    "expression": "$.data",
+                    "name": "output",
+                    "type": "String"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "modelCompletion",
+                    "type": "String"
+                }
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "name": "StartToInvoke",
+            "source": "Start",
+            "target": "Invoke",
+            "type": "Data",
+            "configuration": {
+                "data": {
+                    "sourceOutput": "document",
+                    "targetInput": "input"
+                }
+            }
+        },
+        {
+            "name": "InvokeToEvaluate",
+            "source": "Invoke",
+            "target": "Evaluate",
+            "type": "Data",
+            "configuration": {
+                "data": {
+                    "sourceOutput": "modelCompletion",
+                    "targetInput": "output"
+                }
+            }
+        },
+        {
+            "name": "StartToEvaluate",
+            "source": "Start",
+            "target": "Evaluate",
+            "type": "Data",
+            "configuration": {
+                "data": {
+                    "sourceOutput": "document",
+                    "targetInput": "input"
+                }
+            }
+        },
+        {
+            "name": "EvaluateToEnd",
+            "source": "Evaluate",
+            "target": "End",
+            "type": "Data",
+            "configuration": {
+                "data": {
+                    "sourceOutput": "modelCompletion",
+                    "targetInput": "document"
+                }
+            }
+        }
+    ]
+}
