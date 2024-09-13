@@ -70,6 +70,43 @@ fi
 - Continuously test and refine your prompts to improve performance.
 - Pay attention to the model's outputs and adjust your prompts accordingly.
 
+* Provider-Specific Guidelines Comparison
+
+| Provider         | Key Recommendations                                         | Unique Approaches                                                  |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Anthropic Claude | - Use clear, specific instructions                          | - Emphasizes using XML tags for structuring prompts                |
+|                  | - Leverage few-shot learning with examples                  | - Recommends "Let's approach this step-by-step" for complex tasks  |
+|                  | - Use system prompts to set context and persona             |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Cohere           | - Be specific and provide context                           | - Focuses on "prompt engineering patterns" like chain-of-thought   |
+|                  | - Use examples to guide the model                           | - Emphasizes iterative refinement of prompts                       |
+|                  | - Experiment with different prompting techniques            |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| AI21 Jurassic    | - Use clear and concise language                            | - Provides specific guidelines for different task types            |
+|                  | - Provide context and examples                              | - Emphasizes the importance of prompt length and complexity        |
+|                  | - Iterate and refine prompts based on results               |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Meta Llama 2     | - Use clear and specific instructions                       | - Focuses on "zero-shot" and "few-shot" learning approaches        |
+|                  | - Provide context and background information                | - Emphasizes the importance of prompt formatting and structure     |
+|                  | - Experiment with different prompting styles                |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Stability AI     | - Be specific about the desired output                      | - Focuses on image generation prompts                              |
+|                  | - Use descriptive language and adjectives                   | - Emphasizes the importance of prompt structure for visual outputs |
+|                  | - Experiment with different prompt structures               |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Mistral AI       | - Use clear and concise instructions                        | - Emphasizes task-specific prompting techniques                    |
+|                  | - Leverage few-shot learning for complex tasks              | - Focuses on evaluation and iterative improvement of prompts       |
+|                  | - Structure prompts with clear separators or formatting     |                                                                    |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| Amazon Bedrock   | - Be clear and specific in instructions                     | - Provides a unified approach synthesizing best practices          |
+|                  | - Use structured prompts (e.g., with XML tags)              | - Emphasizes the importance of context and role-based prompting    |
+|                  | - Leverage few-shot learning and chain-of-thought reasoning | - Focuses on evaluation and iterative refinement of prompts        |
+|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
+| OpenAI GPT-4     | - Use clear and concise instructions                        | - Emphasizes "system messages" for setting context and behavior    |
+|                  | - Leverage few-shot learning for complex tasks              | - Focuses on function calling for structured outputs               |
+|                  | - Experiment with temperature and top_p settings            | - Recommends using the Assistants API for multi-turn conversations |
+
+
 * Examples
 
 ** Clear and Specific Prompt
