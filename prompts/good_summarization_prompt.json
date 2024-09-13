@@ -1,0 +1,1 @@
+{"input":"<prompt><instructions>Summarize the following text in 3-5 sentences.</instructions>\n<text>{text_to_summarize}</text></prompt>"}

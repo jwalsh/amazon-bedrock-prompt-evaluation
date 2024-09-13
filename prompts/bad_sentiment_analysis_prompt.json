@@ -1,0 +1,1 @@
+{"input":"<prompt>Analyze customer feedback for a restaurant. Categorize the following review as positive, negative, or neutral.\nExample:\nReview: 'The food was delicious but the service was slow.'\nCategory: Neutral\n{customer_review}</prompt>"}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE prompt SYSTEM "../prompts.dtd">
+<prompt>
+  <task>Analyze the sentiment of the following customer review:</task>
+  <review>{customer_review_text}</review>
+  <output_format>
+  Provide the output in JSON format with the following structure:
+  {
+    "sentiment": "positive|negative|neutral",
+    "confidence": 0.0 to 1.0,
+    "key_phrases": ["phrase1", "phrase2", "phrase3"]
+  }
+  </output_format>
+</prompt>

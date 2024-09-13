@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE prompt SYSTEM "../prompts.dtd">
+<prompt>
+  <examples>
+    <input>The sky is blue.</input>
+    <output>This sentence describes the color of the sky.</output>
+    <input>Cats are furry animals.</input>
+    <output>This sentence provides a characteristic of cats.</output>
+  </examples>
+  <task>Describe what the following sentence does:</task>
+  <input>{input_sentence}</input>
+</prompt>

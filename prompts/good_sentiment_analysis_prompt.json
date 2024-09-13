@@ -1,0 +1,1 @@
+{"input":"<prompt><context>You are analyzing customer feedback for a restaurant.</context>\n<task>Categorize the following review as positive, negative, or neutral.</task>\n<examples>\n<input>Review: 'The food was delicious but the service was slow.'</input>\n<output>Category: Neutral</output>\n</examples>\n<review>{customer_review}</review></prompt>"}

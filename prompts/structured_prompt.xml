@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE prompt SYSTEM "../prompts.dtd">
+<prompt>
+  <context>You are a financial advisor.</context>
+  <task>Provide investment advice based on the following client information:</task>
+  <client_info>
+    <age>35</age>
+    <income>75000</income>
+    <risk_tolerance>moderate</risk_tolerance>
+  </client_info>
+  <output_format>Provide advice in bullet points, covering stocks, bonds, and savings.</output_format>
+</prompt>

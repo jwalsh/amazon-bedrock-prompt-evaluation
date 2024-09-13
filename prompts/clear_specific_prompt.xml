@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE prompt SYSTEM "../prompts.dtd">
+<prompt>
+  <instructions>Summarize the following text in 3-5 sentences, focusing on the main ideas and key points.</instructions>
+  <text>{input_text}</text>
+</prompt>
