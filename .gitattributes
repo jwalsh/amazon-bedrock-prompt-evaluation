@@ -5,5 +5,8 @@
 *.tmpl linguist-generated=true
 prompts_dataset.jsonl linguist-generated=true
 
+# Exclude test files from being marked as generated
+flow_simulator/tests/*.py linguist-generated=false
+
 # Exclude generated files from GitHub language statistics
 prompts/* linguist-vendored
