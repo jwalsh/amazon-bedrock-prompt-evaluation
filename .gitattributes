@@ -1,0 +1,9 @@
+# Generated files (do not edit directly)
+*.py linguist-generated=true
+*.sh linguist-generated=true
+*.json linguist-generated=true
+*.tmpl linguist-generated=true
+prompts_dataset.jsonl linguist-generated=true
+
+# Exclude generated files from GitHub language statistics
+prompts/* linguist-vendored

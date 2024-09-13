@@ -10,6 +10,7 @@ python = "^3.11"
 boto3 = "^1.35.17"
 botocore = "^1.35.17"
 matplotlib = "^3.9.2"
+files-to-prompt = "^0.3"
 
 
 [build-system]
