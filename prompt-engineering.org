@@ -1,34 +1,19 @@
-#+TITLE: Prompt Engineering Guide for Amazon Bedrock
+#+TITLE: Prompt Engineering Guide for Advanced Language Models
 #+AUTHOR: Jason Walsh <j@wal.sh>, Claude Assistant
 #+DATE: [2023-09-12 Tue]
 
 * Introduction
-This comprehensive guide provides detailed information on prompt engineering techniques for Amazon Bedrock, incorporating recommendations from various model providers and practical examples. It aims to help you create more effective prompts for large language models, leading to better and more consistent results.
+This comprehensive guide provides updated information on prompt engineering techniques for advanced language models like GPT-O1, incorporating recommendations from various sources and practical examples. It aims to help you create more effective prompts, leading to better and more consistent results.
 
 * Document Type Definition (DTD)
 
 #+BEGIN_SRC dtd :tangle prompts.dtd
 <!ELEMENT prompts (prompt+)>
-<!ELEMENT prompt (instructions|text|role|task|format|context|client_info|symptoms|problem|review|focus_points|article|output_format|examples)*>
+<!ELEMENT prompt (instructions|context|input|output_format)*>
 <!ELEMENT instructions (#PCDATA)>
-<!ELEMENT text (#PCDATA)>
-<!ELEMENT role (#PCDATA)>
-<!ELEMENT task (#PCDATA)>
-<!ELEMENT format (#PCDATA)>
 <!ELEMENT context (#PCDATA)>
-<!ELEMENT client_info (age, income, risk_tolerance)>
-<!ELEMENT age (#PCDATA)>
-<!ELEMENT income (#PCDATA)>
-<!ELEMENT risk_tolerance (#PCDATA)>
-<!ELEMENT symptoms (#PCDATA)>
-<!ELEMENT problem (#PCDATA)>
-<!ELEMENT review (#PCDATA)>
-<!ELEMENT focus_points (#PCDATA)>
-<!ELEMENT article (#PCDATA)>
-<!ELEMENT output_format (#PCDATA)>
-<!ELEMENT examples (input, output)+>
 <!ELEMENT input (#PCDATA)>
-<!ELEMENT output (#PCDATA)>
+<!ELEMENT output_format (#PCDATA)>
 #+END_SRC
 
 * XMLLint Validator
@@ -40,7 +25,7 @@ This comprehensive guide provides detailed information on prompt engineering tec
 #!/bin/bash
 
 # Validate prompts using xmllint
-xmllint --noout --dtdvalid prompts.dtd prompts.xml
+xmllint --noout --dtdvalid prompts.dtd prompts/*.xml
 
 # Check the exit status
 if [ $? -eq 0 ]; then
@@ -50,446 +35,142 @@ else
 fi
 #+END_SRC
 
-* Overview
-** Key Concepts
-- Prompt engineering refers to optimizing input to LLMs to get desired responses
-- Quality of prompts impacts quality of model outputs
-- Techniques range from basic to advanced
+* Key Principles for Effective Prompting
 
-** Basic Techniques
-- Be clear and direct in instructions
-- Use examples (few-shot learning)
-- Let the model think step-by-step (chain of thought)
+** 1. Keep Prompts Simple and Direct
+- The model understands instructions well, so avoid over-guiding it.
+- Be clear and specific in your instructions.
+- Avoid unnecessary complexity or verbosity.
 
-** Advanced Techniques
-- Use XML tags to structure prompts
-- Give the model a role/persona
-- Prefill part of the response
-- Chain multiple prompts together
+** 2. Use Delimiters for Clarity
+- Incorporate delimiters like triple quotation marks, XML tags, or section titles.
+- This helps the model distinguish between different parts of the input.
 
-** Best Practices
-- Start with a clear success criteria and evaluation method
-- Try techniques in order from basic to advanced
-- Be consistent in tag usage
-- Nest tags for hierarchical content
+** 3. Specify Output Format When Necessary
+- Clearly indicate the desired format for the model's response.
+- This can include specifying the length, structure, or style of the output.
 
-** Benefits
-- Improves clarity and accuracy
-- Reduces errors from misinterpretation
-- Allows flexibility in modifying prompts
-- Makes outputs easier to parse
-* Provider-Specific Guidelines Comparison
+** 4. Provide Context Sparingly
+- When using retrieval augmented generation (RAG), limit additional context.
+- Too much context can overcomplicate the model's response.
 
-| Provider         | Key Recommendations                                         | Unique Approaches                                                  |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Anthropic Claude | - Use clear, specific instructions                          | - Emphasizes using XML tags for structuring prompts                |
-|                  | - Leverage few-shot learning with examples                  | - Recommends "Let's approach this step-by-step" for complex tasks  |
-|                  | - Use system prompts to set context and persona             |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Cohere           | - Be specific and provide context                           | - Focuses on "prompt engineering patterns" like chain-of-thought   |
-|                  | - Use examples to guide the model                           | - Emphasizes iterative refinement of prompts                       |
-|                  | - Experiment with different prompting techniques            |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| AI21 Jurassic    | - Use clear and concise language                            | - Provides specific guidelines for different task types            |
-|                  | - Provide context and examples                              | - Emphasizes the importance of prompt length and complexity        |
-|                  | - Iterate and refine prompts based on results               |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Meta Llama 2     | - Use clear and specific instructions                       | - Focuses on "zero-shot" and "few-shot" learning approaches        |
-|                  | - Provide context and background information                | - Emphasizes the importance of prompt formatting and structure     |
-|                  | - Experiment with different prompting styles                |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Stability AI     | - Be specific about the desired output                      | - Focuses on image generation prompts                              |
-|                  | - Use descriptive language and adjectives                   | - Emphasizes the importance of prompt structure for visual outputs |
-|                  | - Experiment with different prompt structures               |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Mistral AI       | - Use clear and concise instructions                        | - Emphasizes task-specific prompting techniques                    |
-|                  | - Leverage few-shot learning for complex tasks              | - Focuses on evaluation and iterative improvement of prompts       |
-|                  | - Structure prompts with clear separators or formatting     |                                                                    |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-| Amazon Bedrock   | - Be clear and specific in instructions                     | - Provides a unified approach synthesizing best practices          |
-|                  | - Use structured prompts (e.g., with XML tags)              | - Emphasizes the importance of context and role-based prompting    |
-|                  | - Leverage few-shot learning and chain-of-thought reasoning | - Focuses on evaluation and iterative refinement of prompts        |
-|------------------+-------------------------------------------------------------+--------------------------------------------------------------------|
-* Prompt Engineering Techniques
-** Be Clear and Specific
-- Use clear, concise language in your instructions
-- Avoid ambiguity and vague terms
-- Specify the desired output format or structure
+** 5. Avoid Explicit Chain of Thought Prompts
+- Advanced models like GPT-O1 reason internally.
+- Explicit step-by-step instructions are often unnecessary and can be counterproductive.
 
-Example:
+** 6. Use Examples Judiciously
+- While examples can be helpful, they're often not needed for advanced models.
+- If using examples, keep them minimal and relevant.
 
+** 7. Break Complex Tasks into Subtasks
+- For very complex tasks, consider breaking them down into smaller, more manageable prompts.
+- This can help maintain focus and improve overall performance.
+
+** 8. Iterate and Refine
+- Continuously test and refine your prompts to improve performance.
+- Pay attention to the model's outputs and adjust your prompts accordingly.
+
+* Examples
+
+** Clear and Specific Prompt
 #+BEGIN_SRC xml :tangle prompts/clear_specific_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <instructions>Summarize the following text in 3-5 sentences, focusing on the main ideas and key points.</instructions>
-  <text>{input_text}</text>
+  <instructions>Summarize the following text in three sentences, focusing on the main ideas and key points.</instructions>
+  <input>"""Your text goes here"""</input>
 </prompt>
 #+END_SRC
 
-** Use Examples (Few-Shot Learning)
-- Provide examples of the desired input-output pairs
-- Use diverse examples to cover different scenarios
-- Place examples before the actual task
-
-Example:
-
+** Few-Shot Learning Prompt
 #+BEGIN_SRC xml :tangle prompts/few_shot_learning_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <examples>
-    <input>The sky is blue.</input>
-    <output>This sentence describes the color of the sky.</output>
-    <input>Cats are furry animals.</input>
-    <output>This sentence provides a characteristic of cats.</output>
-  </examples>
-  <task>Describe what the following sentence does:</task>
-  <input>{input_sentence}</input>
+  <instructions>Classify the sentiment of the following review as positive, negative, or neutral.</instructions>
+  <context>
+    Example 1:
+    Input: "The food was delicious but the service was slow."
+    Output: Neutral
+
+    Example 2:
+    Input: "I absolutely loved everything about this restaurant!"
+    Output: Positive
+  </context>
+  <input>"""Your review text goes here"""</input>
 </prompt>
 #+END_SRC
 
-** Structured Prompts
-- Use clear separators or formatting (e.g., XML tags)
-- Consistently structure your prompts across similar tasks
-- Nest tags for hierarchical content
-
-Example:
-
+** Structured Prompt
 #+BEGIN_SRC xml :tangle prompts/structured_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <context>You are a financial advisor.</context>
-  <task>Provide investment advice based on the following client information:</task>
-  <client_info>
-    <age>35</age>
-    <income>75000</income>
-    <risk_tolerance>moderate</risk_tolerance>
-  </client_info>
+  <instructions>Provide investment advice based on the following client information:</instructions>
+  <context>
+    Age: 35
+    Income: $75,000
+    Risk tolerance: moderate
+  </context>
   <output_format>Provide advice in bullet points, covering stocks, bonds, and savings.</output_format>
 </prompt>
 #+END_SRC
 
-** Role-Based Prompting
-- Assign a specific role or persona to the model
-- Provide context relevant to the role
-- Use role-appropriate language and knowledge
-
-Example:
-
+** Role-Based Prompt
 #+BEGIN_SRC xml :tangle prompts/role_based_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <role>You are an experienced pediatrician.</role>
-  <context>A worried parent has brought in their 5-year-old child with the following symptoms:</context>
-  <symptoms>
-  - Fever (101°F)
-  - Runny nose
-  - Cough
-  - Loss of appetite
-  </symptoms>
-  <task>Provide a possible diagnosis and recommended course of action.</task>
+  <instructions>As an experienced pediatrician, provide a possible diagnosis and recommended course of action for a 5-year-old child with the following symptoms:</instructions>
+  <input>
+    - Fever (101°F)
+    - Runny nose
+    - Cough
+    - Loss of appetite
+  </input>
 </prompt>
 #+END_SRC
-** Chain of Thought
-- Break down complex tasks into smaller steps
-- Ask the model to explain its reasoning
-- Use phrases like "Let's approach this step-by-step"
 
-Example:
-
+** Chain of Thought Prompt
 #+BEGIN_SRC xml :tangle prompts/chain_of_thought_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <task>Solve the following word problem:</task>
-  <problem>If a train travels 120 miles in 2 hours, how far will it travel in 5 hours assuming it maintains the same speed?</problem>
-  <instructions>Let's solve this step-by-step:
-  1. Calculate the train's speed
-  2. Use the speed to determine the distance traveled in 5 hours
-  Explain each step of your reasoning.</instructions>
+  <instructions>Solve the following word problem:</instructions>
+  <input>If a train travels 120 miles in 2 hours, how far will it travel in 5 hours assuming it maintains the same speed?</input>
+  <output_format>Explain your reasoning step-by-step.</output_format>
 </prompt>
 #+END_SRC
 
-** Context Provision
-- Provide relevant background information
-- Include any constraints or special considerations
-- Use the context to guide the model's understanding
-
-Example:
-
+** Context Provision Prompt
 #+BEGIN_SRC xml :tangle prompts/context_provision_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
   <context>You are writing a blog post for a tech-savvy audience familiar with basic programming concepts.</context>
-  <task>Explain the concept of recursion in programming.</task>
-  <requirements>
-  - Use an everyday analogy to illustrate the concept
-  - Provide a simple code example in Python
-  - Discuss potential pitfalls and best practices
-  </requirements>
+  <instructions>Explain the concept of recursion in programming. Use an everyday analogy to illustrate the concept, provide a simple code example in Python, and discuss potential pitfalls and best practices.</instructions>
 </prompt>
 #+END_SRC
 
-** Output Formatting
-- Clearly specify the desired output format
-- Use examples to demonstrate the expected structure
-- Consider using structured formats like JSON or XML for easy parsing
-
-Example:
-
+** Output Formatting Prompt
 #+BEGIN_SRC xml :tangle prompts/output_formatting_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <task>Analyze the sentiment of the following customer review:</task>
-  <review>{customer_review_text}</review>
+  <instructions>Analyze the sentiment of the following customer review:</instructions>
+  <input>"""Your customer review text goes here"""</input>
   <output_format>
-  Provide the output in JSON format with the following structure:
-  {
-    "sentiment": "positive|negative|neutral",
-    "confidence": 0.0 to 1.0,
-    "key_phrases": ["phrase1", "phrase2", "phrase3"]
-  }
+    Provide the output in JSON format with the following structure:
+    {
+      "sentiment": "positive|negative|neutral",
+      "confidence": 0.0 to 1.0,
+      "key_phrases": ["phrase1", "phrase2", "phrase3"]
+    }
   </output_format>
 </prompt>
 #+END_SRC
 
-** Iterative Refinement
-- Start with a basic prompt and gradually improve it
-- Test the prompt with various inputs
-- Adjust based on the model's performance and output quality
-
-Example:
-
+** Iterative Refinement Prompt
 #+BEGIN_SRC xml :tangle prompts/iterative_refinement_prompt.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <task>Summarize the following news article in 3-5 sentences:</task>
-  <focus_points>
-  - Main event or topic
-  - Key people or organizations involved
-  - Significant impacts or outcomes
-  </focus_points>
-  <article>{news_article_text}</article>
+  <instructions>Summarize the following news article in 3-5 sentences, focusing on:</instructions>
+  <context>
+    - Main event or topic
+    - Key people or organizations involved
+    - Significant impacts or outcomes
+  </context>
+  <input>"""Your news article text goes here"""</input>
   <output_format>Provide the summary in paragraph form, maintaining a neutral tone.</output_format>
 </prompt>
 #+END_SRC
 
-* Examples of Good and Bad Prompts
-** Text Summarization
-*** Good Prompt
-
-#+BEGIN_SRC json :tangle prompts/good_summarization_prompt.json
-{"input":"<prompt><instructions>Summarize the following text in 3-5 sentences.</instructions>\n<text>{text_to_summarize}</text></prompt>"}
-#+END_SRC
-
-*** Bad Prompt
-
-#+BEGIN_SRC json :tangle prompts/bad_summarization_prompt.json
-{"input":"<prompt>Summarize the following text in 3-5 sentences.\n{text_to_summarize}</prompt>"}
-#+END_SRC
-
-** Explaining a Concept
-*** Good Prompt
-
-#+BEGIN_SRC json :tangle prompts/good_concept_explanation_prompt.json
-{"input":"<prompt><role>You are an expert data scientist.</role>\n<task>Explain the concept of linear regression to a beginner.</task>\n<format>Use simple language and provide an example.</format></prompt>"}
-#+END_SRC
-
-*** Bad Prompt
-
-#+BEGIN_SRC json :tangle prompts/bad_concept_explanation_prompt.json
-{"input":"<prompt>You are an expert data scientist. Explain the concept of linear regression to a beginner. Use simple language and provide an example.</prompt>"}
-#+END_SRC
-
-** Sentiment Analysis
-*** Good Prompt
-
-#+BEGIN_SRC json :tangle prompts/good_sentiment_analysis_prompt.json
-{"input":"<prompt><context>You are analyzing customer feedback for a restaurant.</context>\n<task>Categorize the following review as positive, negative, or neutral.</task>\n<examples>\n<input>Review: 'The food was delicious but the service was slow.'</input>\n<output>Category: Neutral</output>\n</examples>\n<review>{customer_review}</review></prompt>"}
-#+END_SRC
-
-*** Bad Prompt
-
-#+BEGIN_SRC json :tangle prompts/bad_sentiment_analysis_prompt.json
-{"input":"<prompt>Analyze customer feedback for a restaurant. Categorize the following review as positive, negative, or neutral.\nExample:\nReview: 'The food was delicious but the service was slow.'\nCategory: Neutral\n{customer_review}</prompt>"}
-#+END_SRC
-
-* Generating prompts_dataset.jsonl
-:PROPERTIES:
-:header-args:json: :tangle prompts_dataset.jsonl
-:END:
-
-#+BEGIN_SRC json
-{"input":"<prompt><task>What is cloud computing in a single paragraph?</task></prompt>"}
-{"input":"<prompt><role>Act as a Solutions Architect</role><task>Explain what is cloud computing.</task><format>Answer with a single and technical paragraph.</format></prompt>"}
-{"input":"<prompt><role>Act as a Solutions Architect</role><task>Explain what is cloud computing.</task><format>Answer with a single and technical paragraph, considering the following example:</format><examples><input>'What is a database?'</input><output>'A database is a structured collection of data organized in a way that facilitates efficient storage, retrieval, modification, and management of information. It consists of one or more tables, each containing rows (records) and columns (fields) that store specific types of data. Databases employ a database management system (DBMS) software that provides tools for defining, creating, maintaining, and controlling access to the data, ensuring data integrity, security, and consistency. Databases are designed to support various operations, such as querying, sorting, indexing, and data manipulation, enabling efficient data processing and analysis for applications across various domains.'</output></examples></prompt>"}
-{"input":"<prompt><task>What is cloud compting?</task></prompt>"}
-#+END_SRC
-
-* Testing the Evaluation Flow
-#+BEGIN_SRC python :tangle test_evaluation_flow.py
-import boto3
-import json
-
-def evaluatePrompt(prompt, flowEvalId, flowEvalAliasId, modelInvokeId, modelEvalId):
-    bedrock_agent_runtime = boto3.client(service_name='bedrock-agent-runtime', region_name='us-east-1')  # Adjust region as needed
-    
-    response = bedrock_agent_runtime.invoke_flow(
-        flowIdentifier=flowEvalId,
-        flowAliasIdentifier=flowEvalAliasId,
-        inputs=[
-            {
-                "content": {
-                    "document": prompt
-                },
-                "nodeName": "Start",
-                "nodeOutputName": "document"
-            }
-        ]
-    )
-    
-    event_stream = response["responseStream"]
-    evalResponse = None
-    
-    for event in event_stream:
-        if "flowOutputEvent" in event:
-            evalResponse = json.loads(event["flowOutputEvent"]["content"]["document"])
-    
-    if evalResponse:
-        evalResponse["modelInvoke"] = modelInvokeId
-        evalResponse["modelEval"] = modelEvalId
-        return evalResponse
-    
-    return None
-
-# Example usage
-flowEvalId = "your_flow_eval_id"
-flowEvalAliasId = "your_flow_eval_alias_id"
-modelInvokeId = "your_model_invoke_id"
-modelEvalId = "your_model_eval_id"
-
-result = evaluatePrompt("What is cloud computing in a single paragraph?", flowEvalId, flowEvalAliasId, modelInvokeId, modelEvalId)
-print(json.dumps(result, indent=2))
-#+END_SRC
-
-* Prompt Evaluation at Scale
-#+BEGIN_SRC python :tangle evaluate_prompts_at_scale.py
-import json
-from datetime import datetime
-from test_evaluation_flow import evaluatePrompt
-
-# Read prompts dataset file
-promptsDataset = []
-with open('prompts_dataset.jsonl') as f:
-    for line in f:
-        promptsDataset.append(json.loads(line))
-
-# Configuration
-flowEvalId = "your_flow_eval_id"
-flowEvalAliasId = "your_flow_eval_alias_id"
-modelInvokeId = "your_model_invoke_id"
-modelEvalId = "your_model_eval_id"
-
-if promptsDataset:
-    results = []
-    for i, j in enumerate(promptsDataset):
-        print(f"{datetime.now().strftime('%H:%M:%S')} - Evaluating prompt {i+1} of {len(promptsDataset)}...")
-        try:
-            results.append(evaluatePrompt(j["input"], flowEvalId, flowEvalAliasId, modelInvokeId, modelEvalId))
-        except Exception as e:
-            print(f"Error evaluating prompt {i+1}: {e}")
-            results.append({"error": str(e)})
-    print("All prompts evaluated.")
-
-# Review results
-for i in results:
-    print(json.dumps(i, indent=2, ensure_ascii=False))
-
-# Visualize results (requires matplotlib)
-import matplotlib.pyplot as plt
-import numpy as np
-
-scores = [result.get('prompt-score', 0) for result in results if 'prompt-score' in result]
-labels = [f"Prompt {i+1}" for i in range(len(scores))]
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar(labels, scores)
-ax.set_title("Evaluation Scores", fontsize=14)
-ax.set_xlabel("Prompts", fontsize=12)
-ax.set_ylabel("Score", fontsize=12)
-plt.xticks(rotation=45, fontsize=10)
-ax.grid(axis='y', linestyle='--', alpha=0.7)
-plt.tight_layout()
-ax.axhline(y=80, color='r', linestyle='--', label='Passing threshold')
-ax.legend(loc='upper right')
-plt.savefig('evaluation_scores.png')
-plt.close()
-
-print("Evaluation scores chart saved as 'evaluation_scores.png'")
-#+END_SRC
-
-* Cleaning-up Resources (optional)
-#+BEGIN_SRC python :tangle cleanup_resources.py
-import boto3
-
-def cleanup_resources(flowEvalId, flowEvalAliasId, promptEvalId):
-    bedrock_agent = boto3.client('bedrock-agent')
-    iam = boto3.client('iam')
-
-    # Delete flow alias
-    bedrock_agent.delete_flow_alias(
-        flowIdentifier=flowEvalId,
-        aliasIdentifier=flowEvalAliasId
-    )
-    print(f"Deleted flow alias: {flowEvalAliasId}")
-
-    # Delete flow version
-    bedrock_agent.delete_flow_version(
-        flowIdentifier=flowEvalId,
-        flowVersion='1'
-    )
-    print(f"Deleted flow version 1 for flow: {flowEvalId}")
-
-    # Delete flow
-    bedrock_agent.delete_flow(
-        flowIdentifier=flowEvalId
-    )
-    print(f"Deleted flow: {flowEvalId}")
-
-    # Delete prompt
-    bedrock_agent.delete_prompt(
-        promptIdentifier=promptEvalId
-    )
-    print(f"Deleted prompt: {promptEvalId}")
-
-    # Detach role policy
-    iam.detach_role_policy(
-        RoleName='MyBedrockFlowsRole',
-        PolicyArn='arn:aws:iam::aws:policy/AmazonBedrockFullAccess'
-    )
-    print("Detached AmazonBedrockFullAccess policy from MyBedrockFlowsRole")
-
-    # Delete role
-    iam.delete_role(
-        RoleName='MyBedrockFlowsRole'
-    )
-    print("Deleted MyBedrockFlowsRole")
-
-    print("Cleanup completed successfully.")
-
-# Example usage
-# cleanup_resources("your_flow_eval_id", "your_flow_eval_alias_id", "your_prompt_eval_id")
-#+END_SRC
-
 * Conclusion
-Prompt engineering is a crucial skill for effectively leveraging large language models like those available through Amazon Bedrock. By following the guidelines and best practices outlined in this guide, you can create more effective prompts that lead to better, more consistent results from your AI models.
+Effective prompt engineering is crucial for getting the best results from advanced language models. By following these updated guidelines and best practices, you can create more efficient and effective prompts, leading to improved outputs across various tasks. Remember to keep your prompts clear, concise, and tailored to the specific capabilities of the model you're using.
 
-Remember that prompt engineering is an iterative process. Continuously evaluate and refine your prompts based on their performance and the specific needs of your use case. As you gain experience and as new techniques emerge, you'll be able to create increasingly sophisticated and effective prompts for a wide range of applications.
-
-This guide provides a solid foundation for prompt engineering with Amazon Bedrock, covering everything from basic concepts to advanced techniques, and including practical tools for evaluation and refinement. As you apply these principles in your projects, you'll develop a deeper understanding of how to craft prompts that unlock the full potential of large language models.
+As language models continue to evolve, stay informed about the latest developments and adjust your prompt engineering techniques accordingly. Regular testing and refinement of your prompts will help you maintain optimal performance in your applications.

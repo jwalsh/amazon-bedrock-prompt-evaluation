@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <examples>
-    <input>The sky is blue.</input>
-    <output>This sentence describes the color of the sky.</output>
-    <input>Cats are furry animals.</input>
-    <output>This sentence provides a characteristic of cats.</output>
-  </examples>
-  <task>Describe what the following sentence does:</task>
-  <input>{input_sentence}</input>
+  <instructions>Classify the sentiment of the following review as positive, negative, or neutral.</instructions>
+  <context>
+    Example 1:
+    Input: "The food was delicious but the service was slow."
+    Output: Neutral
+
+    Example 2:
+    Input: "I absolutely loved everything about this restaurant!"
+    Output: Positive
+  </context>
+  <input>"""Your review text goes here"""</input>
 </prompt>

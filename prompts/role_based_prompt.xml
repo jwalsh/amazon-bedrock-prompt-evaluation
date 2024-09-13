@@ -1,13 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <role>You are an experienced pediatrician.</role>
-  <context>A worried parent has brought in their 5-year-old child with the following symptoms:</context>
-  <symptoms>
-  - Fever (101°F)
-  - Runny nose
-  - Cough
-  - Loss of appetite
-  </symptoms>
-  <task>Provide a possible diagnosis and recommended course of action.</task>
+  <instructions>As an experienced pediatrician, provide a possible diagnosis and recommended course of action for a 5-year-old child with the following symptoms:</instructions>
+  <input>
+    - Fever (101°F)
+    - Runny nose
+    - Cough
+    - Loss of appetite
+  </input>
 </prompt>

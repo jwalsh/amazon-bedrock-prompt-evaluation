@@ -1,21 +1,6 @@
 <!ELEMENT prompts (prompt+)>
-<!ELEMENT prompt (instructions|text|role|task|format|context|client_info|symptoms|problem|review|focus_points|article|output_format|examples)*>
+<!ELEMENT prompt (instructions|context|input|output_format)*>
 <!ELEMENT instructions (#PCDATA)>
-<!ELEMENT text (#PCDATA)>
-<!ELEMENT role (#PCDATA)>
-<!ELEMENT task (#PCDATA)>
-<!ELEMENT format (#PCDATA)>
 <!ELEMENT context (#PCDATA)>
-<!ELEMENT client_info (age, income, risk_tolerance)>
-<!ELEMENT age (#PCDATA)>
-<!ELEMENT income (#PCDATA)>
-<!ELEMENT risk_tolerance (#PCDATA)>
-<!ELEMENT symptoms (#PCDATA)>
-<!ELEMENT problem (#PCDATA)>
-<!ELEMENT review (#PCDATA)>
-<!ELEMENT focus_points (#PCDATA)>
-<!ELEMENT article (#PCDATA)>
-<!ELEMENT output_format (#PCDATA)>
-<!ELEMENT examples (input, output)+>
 <!ELEMENT input (#PCDATA)>
-<!ELEMENT output (#PCDATA)>
+<!ELEMENT output_format (#PCDATA)>

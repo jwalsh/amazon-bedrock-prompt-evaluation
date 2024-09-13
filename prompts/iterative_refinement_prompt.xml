@@ -1,12 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <task>Summarize the following news article in 3-5 sentences:</task>
-  <focus_points>
-  - Main event or topic
-  - Key people or organizations involved
-  - Significant impacts or outcomes
-  </focus_points>
-  <article>{news_article_text}</article>
+  <instructions>Summarize the following news article in 3-5 sentences, focusing on:</instructions>
+  <context>
+    - Main event or topic
+    - Key people or organizations involved
+    - Significant impacts or outcomes
+  </context>
+  <input>"""Your news article text goes here"""</input>
   <output_format>Provide the summary in paragraph form, maintaining a neutral tone.</output_format>
 </prompt>

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Validate prompts using xmllint
-xmllint --noout --dtdvalid prompts.dtd prompts.xml
+xmllint --noout --dtdvalid prompts.dtd prompts/*.xml
 
 # Check the exit status
 if [ $? -eq 0 ]; then

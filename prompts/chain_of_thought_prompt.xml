@@ -1,10 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
-  <task>Solve the following word problem:</task>
-  <problem>If a train travels 120 miles in 2 hours, how far will it travel in 5 hours assuming it maintains the same speed?</problem>
-  <instructions>Let's solve this step-by-step:
-  1. Calculate the train's speed
-  2. Use the speed to determine the distance traveled in 5 hours
-  Explain each step of your reasoning.</instructions>
+  <instructions>Solve the following word problem:</instructions>
+  <input>If a train travels 120 miles in 2 hours, how far will it travel in 5 hours assuming it maintains the same speed?</input>
+  <output_format>Explain your reasoning step-by-step.</output_format>
 </prompt>

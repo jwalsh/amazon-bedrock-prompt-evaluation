@@ -1,11 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE prompt SYSTEM "../prompts.dtd">
 <prompt>
   <context>You are writing a blog post for a tech-savvy audience familiar with basic programming concepts.</context>
-  <task>Explain the concept of recursion in programming.</task>
-  <requirements>
-  - Use an everyday analogy to illustrate the concept
-  - Provide a simple code example in Python
-  - Discuss potential pitfalls and best practices
-  </requirements>
+  <instructions>Explain the concept of recursion in programming. Use an everyday analogy to illustrate the concept, provide a simple code example in Python, and discuss potential pitfalls and best practices.</instructions>
 </prompt>
